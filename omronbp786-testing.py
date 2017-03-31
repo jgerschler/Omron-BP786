@@ -82,6 +82,9 @@ class OmronBP786(object):
             diastolic_digit = 1
             del(self.bin_list[1][0])
 
+        for digit_coords in self.bin_list[1]:
+            self.compute_segments(digit_coords, 0.25, 0.15, 0.05)
+
     def pulse(self):
         if len(self.bin_list[2]) == 3:
             pulse_digit = 1
@@ -129,6 +132,6 @@ class OmronBP786(object):
 if __name__ == '__main__':
     bp = OmronBP786()
     bp.acquire()
-    bp.systolic()
+    bp.diastolic()
     cv2.imshow("Output", bp.image)
     cv2.waitKey(0)
