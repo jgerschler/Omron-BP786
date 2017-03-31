@@ -29,7 +29,7 @@ class OmronBP786(object):
         #image = cv2.imread(image_file)
          
         self.image = imutils.resize(cv2.imread(image_file), height=500)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (39, 39), 0)# kernel width and height should be odd
         thresh = cv2.threshold(blurred, 0, 255,
             cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
@@ -75,26 +75,7 @@ class OmronBP786(object):
             del(bin_list[0][0])
             
         for digit_coords in bin_list[0]:
-            (x, y, w, h) = digit_coords
-            roi = thresh[y:y + h, x:x + w]
-            segments = compute_segments(roi, 0.25, 0.15, 0.05)
-            on = [0] * len(segments)
-
-            for (i, ((xA, yA), (xB, yB))) in enumerate(segments):
-                segROI = roi[yA:yB, xA:xB]
-                total = cv2.countNonZero(segROI)
-                area = (xB - xA) * (yB - yA)
-
-                if total / float(area) > 0.5:# greater than 50% of pixels are non-zero, mark segment as on
-                    on[i]= 1
-
-            # lookup the digit and draw it on the image
-            digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
-            digits.append(digit)
-            cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 1)
-            cv2.putText(self.image, str(digit), (x + 50, y + 50),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
-
+            compute_segments(digit_coords, 0.25, 0.15, 0.05)
 
     def diastolic(self):
         if len(bin_list[1]) == 3:
@@ -106,11 +87,15 @@ class OmronBP786(object):
             pulse_digit = 1
             del(bin_list[2][0])
 
-    def compute_segments(self, roi, dW_factor, dH_factor, dHC_factor):
+    def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
+        (x, y, w, h) = digit_coords
+        roi = thresh[y:y + h, x:x + w]
         (roiH, roiW) = roi.shape
 
         (dW, dH) = (int(roiW * dW_factor), int(roiH * dH_factor))
         dHC = int(roiH * dHC_factor)
+
+        digits = []
 
         segments = [
             ((0, 0), (w, dH)),  # top
@@ -122,9 +107,24 @@ class OmronBP786(object):
             ((0, h - dH), (w, h))   # bottom
         ]
 
-        return segments
+        on = [0] * len(segments)
+
+        for (i, ((xA, yA), (xB, yB))) in enumerate(segments):
+            segROI = roi[yA:yB, xA:xB]
+            total = cv2.countNonZero(segROI)
+            area = (xB - xA) * (yB - yA)
+
+            if total / float(area) > 0.5:# greater than 50% of pixels are non-zero, mark segment as on
+                on[i]= 1
+
+        # lookup the digit and draw it on the image
+        digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
+        digits.append(digit)
+        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 1)
+        cv2.putText(self.image, str(digit), (x + 50, y + 50),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
     
-digits = []
+
 
 # loop over each of the digits
 # extract the digit ROI
