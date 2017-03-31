@@ -75,7 +75,7 @@ class OmronBP786(object):
             del(self.bin_list[0][0])
             
         for digit_coords in self.bin_list[0]:
-            self.compute_segments(digit_coords, 0.25, 0.15, 0.05)
+            self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
     def diastolic(self):
         if len(self.bin_list[1]) == 3:
@@ -83,13 +83,16 @@ class OmronBP786(object):
             del(self.bin_list[1][0])
 
         for digit_coords in self.bin_list[1]:
-            self.compute_segments(digit_coords, 0.25, 0.15, 0.05)
+            self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
     def pulse(self):
         if len(self.bin_list[2]) == 3:
             pulse_digit = 1
             del(self.bin_list[2][0])
 
+        for digit_coords in self.bin_list[2]:
+            self.compute_segments(digit_coords, 0.20, 0.12, 0.12)
+            
     def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
         (x, y, w, h) = digit_coords
         roi = self.thresh[y:y + h, x:x + w]
@@ -132,6 +135,6 @@ class OmronBP786(object):
 if __name__ == '__main__':
     bp = OmronBP786()
     bp.acquire()
-    bp.diastolic()
+    bp.pulse()
     cv2.imshow("Output", bp.image)
     cv2.waitKey(0)
