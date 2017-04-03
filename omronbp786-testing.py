@@ -86,12 +86,15 @@ class OmronBP786(object):
             self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
     def pulse(self):
+        self.digits = []
         if len(self.bin_list[2]) == 3:
             pulse_digit = 1
             del(self.bin_list[2][0])
 
         for digit_coords in self.bin_list[2]:
             self.compute_segments(digit_coords, 0.20, 0.12, 0.12)
+
+        return ''.join(self.digits)
             
     def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
         (x, y, w, h) = digit_coords
@@ -100,8 +103,6 @@ class OmronBP786(object):
 
         (dW, dH) = (int(roiW * dW_factor), int(roiH * dH_factor))
         dHC = int(roiH * dHC_factor)
-
-        digits = []
 
         segments = [
             ((0, 0), (w, dH)),  # top
@@ -125,8 +126,8 @@ class OmronBP786(object):
 
         # lookup the digit and draw it on the image
         digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
-        digits.append(digit)
-        print(digits)
+        self.digits.append(digit)
+
         cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
 ##        cv2.putText(self.image, str(digit), (x + 50, y + 50),
 ##            cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
@@ -136,6 +137,6 @@ class OmronBP786(object):
 if __name__ == '__main__':
     bp = OmronBP786()
     bp.acquire()
-    bp.pulse()
+    print(bp.pulse())
     cv2.imshow("Output", bp.image)
     cv2.waitKey(0)
