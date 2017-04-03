@@ -126,9 +126,10 @@ class OmronBP786(object):
         # lookup the digit and draw it on the image
         digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
         digits.append(digit)
-        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 255, 0), 1)
-        cv2.putText(self.image, str(digit), (x + 50, y + 50),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
+        print(digits)
+        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
+##        cv2.putText(self.image, str(digit), (x + 50, y + 50),
+##            cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
     
 
 
