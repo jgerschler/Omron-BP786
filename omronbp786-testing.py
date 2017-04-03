@@ -94,7 +94,7 @@ class OmronBP786(object):
         for digit_coords in self.bin_list[2]:
             self.compute_segments(digit_coords, 0.20, 0.12, 0.12)
 
-        return ''.join(self.digits)
+        return (int(''.join(self.digits)),'bpm')
             
     def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
         (x, y, w, h) = digit_coords
@@ -126,7 +126,7 @@ class OmronBP786(object):
 
         # lookup the digit and draw it on the image
         digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
-        self.digits.append(digit)
+        self.digits.append(str(digit))
 
         cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
 ##        cv2.putText(self.image, str(digit), (x + 50, y + 50),
