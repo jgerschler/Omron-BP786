@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+Proof of concept script; As of this writing, the Omron BP786 does not currently support data export outside of a closed-source app.
+Code modified from http://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
+"""
+
 from imutils import contours
 import imutils
 import cv2
@@ -25,9 +30,7 @@ class OmronBP786(object):
     def __init__(self):
         image_file = 'sample.png'
 
-    def acquire(self, image_file='sample.png'):
-        #image = cv2.imread(image_file)
-         
+    def acquire(self, image_file='sample.png'):        
         self.image = imutils.resize(cv2.imread(image_file), height=500)
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (39, 39), 0)# kernel width and height should be odd
@@ -71,36 +74,39 @@ class OmronBP786(object):
 
     def systolic(self):
         self.digits = []
+        systolic_digit = ''
         if len(self.bin_list[0]) == 3:# if there are three digits in bin, then value must be >= 100
-            systolic_digit = 1
+            systolic_digit = '1'
             del(self.bin_list[0][0])
             
         for digit_coords in self.bin_list[0]:
             self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
-        return (int(''.join(self.digits)),'mmHg')
+        return (int(systolic_digit + ''.join(self.digits)),'mmHg')
 
     def diastolic(self):
         self.digits = []
+        diastolic_digit = ''
         if len(self.bin_list[1]) == 3:
-            diastolic_digit = 1
+            diastolic_digit = '1'
             del(self.bin_list[1][0])
 
         for digit_coords in self.bin_list[1]:
             self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
-        return (int(''.join(self.digits)),'mmHg')
+        return (int(diastolic_digit + ''.join(self.digits)),'mmHg')
 
     def pulse(self):
         self.digits = []
+        pulse_digit = ''
         if len(self.bin_list[2]) == 3:
-            pulse_digit = 1
+            pulse_digit = '1'
             del(self.bin_list[2][0])
 
         for digit_coords in self.bin_list[2]:
             self.compute_segments(digit_coords, 0.20, 0.12, 0.12)
 
-        return (int(''.join(self.digits)),'bpm')
+        return (int(pulse_digit + ''.join(self.digits)),'bpm')
             
     def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
         (x, y, w, h) = digit_coords
