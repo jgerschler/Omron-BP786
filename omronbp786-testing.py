@@ -70,6 +70,7 @@ class OmronBP786(object):
             entry.sort()
 
     def systolic(self):
+        self.digits = []
         if len(self.bin_list[0]) == 3:# if there are three digits in bin, then value must be >= 100
             systolic_digit = 1
             del(self.bin_list[0][0])
@@ -77,13 +78,18 @@ class OmronBP786(object):
         for digit_coords in self.bin_list[0]:
             self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
 
+        return (int(''.join(self.digits)),'mmHg')
+
     def diastolic(self):
+        self.digits = []
         if len(self.bin_list[1]) == 3:
             diastolic_digit = 1
             del(self.bin_list[1][0])
 
         for digit_coords in self.bin_list[1]:
             self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
+
+        return (int(''.join(self.digits)),'mmHg')
 
     def pulse(self):
         self.digits = []
@@ -129,14 +135,11 @@ class OmronBP786(object):
         self.digits.append(str(digit))
 
         cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
-##        cv2.putText(self.image, str(digit), (x + 50, y + 50),
-##            cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 0), 2)
-    
 
 
 if __name__ == '__main__':
     bp = OmronBP786()
     bp.acquire()
-    print(bp.pulse())
+    print(bp.systolic())
     cv2.imshow("Output", bp.image)
     cv2.waitKey(0)
