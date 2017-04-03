@@ -73,6 +73,9 @@ class OmronBP786(object):
             entry.sort()
 
     def systolic(self):
+        """
+        Returns a tuple of form (systolic pressure (int), measuring unit (str))
+        """
         self.digits = []
         systolic_digit = ''
         if len(self.bin_list[0]) == 3:# if there are three digits in bin, then value must be >= 100
@@ -85,6 +88,9 @@ class OmronBP786(object):
         return (int(systolic_digit + ''.join(self.digits)),'mmHg')
 
     def diastolic(self):
+        """
+        Returns a tuple of form (diastolic pressure (int), measuring unit (str))
+        """
         self.digits = []
         diastolic_digit = ''
         if len(self.bin_list[1]) == 3:
@@ -97,6 +103,9 @@ class OmronBP786(object):
         return (int(diastolic_digit + ''.join(self.digits)),'mmHg')
 
     def pulse(self):
+        """
+        Returns a tuple of form (pulse (int), measuring unit (str))
+        """
         self.digits = []
         pulse_digit = ''
         if len(self.bin_list[2]) == 3:
@@ -145,7 +154,9 @@ class OmronBP786(object):
 
 if __name__ == '__main__':
     bp = OmronBP786()
-    bp.acquire()
+    bp.acquire()# acquire data from image
     print(bp.systolic())
-    cv2.imshow("Output", bp.image)
-    cv2.waitKey(0)
+    print(bp.diastolic())
+    print(bp.pulse())
+    #cv2.imshow("Output", bp.image)# show image
+    #cv2.waitKey(0)
