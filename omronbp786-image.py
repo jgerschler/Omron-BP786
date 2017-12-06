@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """
-Proof of concept script; As of this writing, the Omron BP786 does not currently support data export outside of a closed-source app.
-Code modified from http://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
+Proof of concept script; As of this writing, the Omron BP786 does not currently
+support data export outside of a closed-source app. Code modified from
+http://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
 """
 
 from imutils import contours
