@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# currently only works for systolic and diastolic. In progress!!
 """
 Proof of concept script; As of this writing, the Omron BP786 does not currently
 support data export outside of a closed-source app. Code modified from
@@ -39,82 +39,82 @@ class OmronBP786(object):
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
         self.thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
 
-##        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-##            cv2.CHAIN_APPROX_SIMPLE)
-##        cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-##        digit_coords = []
-##         
-##        for c in cnts:
-##            (x, y, w, h) = cv2.boundingRect(c)
-##            if float(h) / w > 1.1 and h > 70:# only grab large countours
-##                digit_coords.append((x, y, w, h))
-##                
-##        digit_coords.remove(max(digit_coords))# remove right-most artefact (not a digit)
-##
-##        digit_coords.sort(key=lambda x:x[1])
-##
-##        self.bin_list = [[digit_coords.pop(0)]]
-##
-##        for rect in digit_coords:
-##            if abs(rect[1] - self.bin_list[0][0][1]) < 20:
-##                self.bin_list[0].append(rect)
-##                digit_coords = digit_coords[1:]
-##
-##        self.bin_list.append([digit_coords.pop(0)])
-##
-##        for rect in digit_coords:
-##            if abs(rect[1] - self.bin_list[1][0][1]) < 20:
-##                self.bin_list[1].append(rect)
-##                digit_coords = digit_coords[1:]
-##
-##        self.bin_list.append(digit_coords)
-##
-##        for entry in self.bin_list:
-##            entry.sort()
-##
-##        print(self.bin_list)
-##
-##        for digit_coords in self.bin_list[0]:
-##            self.digits = []
-##            self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
-##            
-##    def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
-##        (x, y, w, h) = digit_coords
-##        roi = self.thresh[y:y + h, x:x + w]
-##        (roiH, roiW) = roi.shape
-##
-##        (dW, dH) = (int(roiW * dW_factor), int(roiH * dH_factor))
-##        dHC = int(roiH * dHC_factor)
-##
-##        segments = [
-##            ((0, 0), (w, dH)),  # top
-##            ((0, 0), (dW, h // 2)), # top-left
-##            ((w - dW, 0), (w, h // 2)), # top-right
-##            ((0, (h // 2) - dHC) , (w, (h // 2) + dHC)), # center
-##            ((0, h // 2), (dW, h)), # bottom-left
-##            ((w - dW, h // 2), (w, h)), # bottom-right
-##            ((0, h - dH), (w, h))   # bottom
-##        ]
-##
-##        on = [0] * len(segments)
-##
-##        for (i, ((xA, yA), (xB, yB))) in enumerate(segments):
-##            segROI = roi[yA:yB, xA:xB]
-##            total = cv2.countNonZero(segROI)
-##            area = (xB - xA) * (yB - yA)
-##
-##            if total / float(area) > 0.5:# greater than 50% of pixels are non-zero, mark segment as on
-##                on[i]= 1
-##
-##        # lookup the digit and draw it on the image
-##        digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
-##        self.digits.append(str(digit))
-##
-##        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
+        cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+        digit_coords = []
+         
+        for c in cnts:
+            (x, y, w, h) = cv2.boundingRect(c)
+            if float(h) / w > 1.1 and float(h) / w < 9 and h > 60:# only grab large countours of certain ratio
+                digit_coords.append((x, y, w, h))
+                
+        digit_coords.remove(max(digit_coords))# remove right-most artefact (not a digit)
+
+        digit_coords.sort(key=lambda x:x[1])
+
+        self.bin_list = [[digit_coords.pop(0)]]
+
+        for rect in digit_coords:
+            if abs(rect[1] - self.bin_list[0][0][1]) < 20:
+                self.bin_list[0].append(rect)
+                digit_coords = digit_coords[1:]
+
+        self.bin_list.append([digit_coords.pop(0)])
+
+        for rect in digit_coords:
+            if abs(rect[1] - self.bin_list[1][0][1]) < 20:
+                self.bin_list[1].append(rect)
+                digit_coords = digit_coords[1:]
+
+        self.bin_list.append(digit_coords)
+
+        for entry in self.bin_list:
+            entry.sort()
+
+        print(self.bin_list)
+
+        for digit_coords in self.bin_list[1]:
+            self.digits = []
+            self.compute_segments(digit_coords, 0.25, 0.15, 0.15)
+            
+    def compute_segments(self, digit_coords, dW_factor, dH_factor, dHC_factor):
+        (x, y, w, h) = digit_coords
+        roi = self.thresh[y:y + h, x:x + w]
+        (roiH, roiW) = roi.shape
+
+        (dW, dH) = (int(roiW * dW_factor), int(roiH * dH_factor))
+        dHC = int(roiH * dHC_factor)
+
+        segments = [
+            ((0, 0), (w, dH)),  # top
+            ((0, 0), (dW, h // 2)), # top-left
+            ((w - dW, 0), (w, h // 2)), # top-right
+            ((0, (h // 2) - dHC) , (w, (h // 2) + dHC)), # center
+            ((0, h // 2), (dW, h)), # bottom-left
+            ((w - dW, h // 2), (w, h)), # bottom-right
+            ((0, h - dH), (w, h))   # bottom
+        ]
+
+        on = [0] * len(segments)
+
+        for (i, ((xA, yA), (xB, yB))) in enumerate(segments):
+            segROI = roi[yA:yB, xA:xB]
+            total = cv2.countNonZero(segROI)
+            area = (xB - xA) * (yB - yA)
+
+            if total / float(area) > 0.5:# greater than 50% of pixels are non-zero, mark segment as on
+                on[i]= 1
+
+        # lookup the digit and draw it on the image
+        digit = OmronBP786.DIGITS_LOOKUP[tuple(on)]
+        self.digits.append(str(digit))
+
+        cv2.rectangle(self.image, (x, y), (x + w, y + h), (0, 0, 255), 1)
 
 
 if __name__ == '__main__':
     bp = OmronBP786()
     bp.acquire()# acquire data from image
-    cv2.imshow("Output", bp.thresh)# show image
+    cv2.imshow("Output", bp.image)# show image
     cv2.waitKey(0)
